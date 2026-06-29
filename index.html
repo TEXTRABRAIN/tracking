@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>TEXTRA Tracking</title>
+<style>
+  html,body{margin:0;padding:0;height:100%;background:#070d18;}
+  #wrap{position:fixed;inset:0;background:#070d18;}
+  iframe{border:0;width:100%;height:100%;display:block;background:#070d18;}
+  #hint{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+        color:#9fb4c9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+        font-size:15px;line-height:1.6;padding:24px;text-align:center;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="hint">Bitte den persönlichen Tracking-Link mit Auftragsnummer öffnen.</div>
+</div>
+<script>
+(function(){
+  // Adresse der bereitgestellten TEXTRA-Web-App (CONFIG.WEB_APP_URL).
+  var WEBAPP = "https://script.google.com/macros/s/AKfycbxgmvSEWnsqmkBUnc-I_NLd_0akmmkAsDTbrliJRDNrjRJPT1vAdtr8j9UCLC255Y8d/exec";
+  var qs = window.location.search || "";
+  var hatParams = /[?&]nr=/.test(qs) && /[?&]token=/.test(qs);
+  if (hatParams) {
+    var f = document.createElement("iframe");
+    f.src = WEBAPP + qs;            // nr und token werden 1:1 weitergereicht
+    f.setAttribute("title", "TEXTRA Tracking");
+    var wrap = document.getElementById("wrap");
+    wrap.innerHTML = "";
+    wrap.appendChild(f);
+  }
+})();
+</script>
+</body>
+</html>
