@@ -5,18 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>TEXTRA Tracking</title>
 <style>
-  html,body{margin:0;padding:0;height:100%;background:#070d18;}
-  #wrap{position:fixed;inset:0;background:#070d18;}
-  iframe{border:0;width:100%;height:100%;display:block;background:#070d18;}
+  html,body{margin:0;padding:0;background:#070d18;}
+  body{min-height:100vh;}
+  iframe{border:0;width:100%;display:block;background:#070d18;height:100vh;}
   #hint{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
         color:#9fb4c9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
         font-size:15px;line-height:1.6;padding:24px;text-align:center;}
 </style>
 </head>
 <body>
-<div id="wrap">
-  <div id="hint">Bitte den persönlichen Tracking-Link mit Auftragsnummer öffnen.</div>
-</div>
+<div id="hint">Bitte den persönlichen Tracking-Link mit Auftragsnummer öffnen.</div>
 <script>
 (function(){
   // Adresse der bereitgestellten TEXTRA-Web-App (CONFIG.WEB_APP_URL).
@@ -24,12 +22,20 @@
   var qs = window.location.search || "";
   var hatParams = /[?&]nr=/.test(qs) && /[?&]token=/.test(qs);
   if (hatParams) {
+    var hint = document.getElementById("hint");
+    if (hint) hint.parentNode.removeChild(hint);
     var f = document.createElement("iframe");
-    f.src = WEBAPP + qs;            // nr und token werden 1:1 weitergereicht
+    f.src = WEBAPP + qs;             // nr und token werden 1:1 weitergereicht
     f.setAttribute("title", "TEXTRA Tracking");
-    var wrap = document.getElementById("wrap");
-    wrap.innerHTML = "";
-    wrap.appendChild(f);
+    document.body.appendChild(f);
+    // Die Seite im Rahmen meldet ihre echte Hoehe. Rahmen waechst mit,
+    // dadurch scrollt die Seite am Handy normal (kein abgeschnittener Bereich).
+    window.addEventListener("message", function(ev){
+      var d = ev.data;
+      if (d && typeof d.textraHeight === "number" && d.textraHeight > 200) {
+        f.style.height = d.textraHeight + "px";
+      }
+    });
   }
 })();
 </script>
