@@ -228,13 +228,18 @@ canvas.bg{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0}
     var t=p.get('t')||p.get('token')||'';
     if(!t && location.hash) t=location.hash.replace(/^#/,'');
     var nr=p.get('nr')||'';
+    var pv=p.get('preview')||'';
     if(!t) return '';
-    return 't='+encodeURIComponent(t)+(nr?('&nr='+encodeURIComponent(nr)):'');
+    return 't='+encodeURIComponent(t)+(nr?('&nr='+encodeURIComponent(nr)):'')+(pv?('&preview='+encodeURIComponent(pv)):'');
   }
 
   window.__trackCb=function(r){
     if(!r){ showErr('Verbindungsfehler, bitte neu laden.'); return; }
-    if(!r.ok){ showErr(r.notFound ? 'Auftrag nicht gefunden. Bitte den persoenlichen Link aus Deiner Bestaetigung oeffnen.' : 'Der Tracking-Dienst ist gerade nicht erreichbar, bitte spaeter erneut versuchen.'); return; }
+    if(!r.ok){
+      if(r.wartung){ showErr('Die Sendungsverfolgung wird gerade vorbereitet und ist in Kuerze fuer Dich verfuegbar. Bitte etwas spaeter erneut oeffnen.'); return; }
+      if(r.klarstellung){ showErr('Fuer diesen Auftrag steht die Online-Verfolgung nicht zur Verfuegung. Bei Fragen zum Status melde Dich gern direkt bei uns.'); return; }
+      showErr(r.notFound ? 'Auftrag nicht gefunden. Bitte den persoenlichen Link aus Deiner Bestaetigung oeffnen.' : 'Der Tracking-Dienst ist gerade nicht erreichbar, bitte spaeter erneut versuchen.'); return;
+    }
     q('#loadwrap').style.display='none';
     q('#main').style.display='';
     ersteAntwort=true;
