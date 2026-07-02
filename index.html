@@ -5,38 +5,272 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>TEXTRA Tracking</title>
 <style>
-  html,body{margin:0;padding:0;background:#070d18;}
-  body{min-height:100vh;}
-  iframe{border:0;width:100%;display:block;background:#070d18;height:100vh;}
-  #hint{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-        color:#9fb4c9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-        font-size:15px;line-height:1.6;padding:24px;text-align:center;}
+html{background:#070d18}
+body{margin:0;background:radial-gradient(circle at 50% 0%,#0d1a2e,#070d18);padding:0}
+*{box-sizing:border-box;margin:0;padding:0}
+.phone{width:100%;max-width:380px;margin:0 auto;background:#060d1a;border-radius:16px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;position:relative}
+canvas.bg{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0}
+.content{position:relative;z-index:1}
+.nav{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid rgba(0,173,239,0.18);background:rgba(6,13,26,0.94)}
+.nav-tag{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(0,173,239,0.5);font-weight:700;border:1px solid rgba(0,173,239,0.18);padding:3px 8px;border-radius:4px}
+.hero{padding:22px 18px 16px;background:linear-gradient(180deg,rgba(0,173,239,0.07) 0%,transparent 100%)}
+.hero-lbl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#00ADEF;opacity:0.6;margin-bottom:4px}
+.hero-nr{font-size:40px;font-weight:900;letter-spacing:-2px;color:#fff;line-height:1}
+.hero-firma{font-size:16px;color:rgba(255,255,255,0.42);margin-top:5px;margin-bottom:16px}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:100px;font-size:14px;font-weight:700;background:rgba(0,173,239,0.11);color:#00ADEF;border:1px solid rgba(0,173,239,0.26)}
+.pill.bereit{background:rgba(61,220,110,0.13);color:#3ddc6e;border-color:rgba(61,220,110,0.45)}
+.pill.bereit .sdot{background:#3ddc6e}
+.rueckbox{margin-top:14px;padding:12px 16px;border-radius:10px;background:rgba(245,194,66,0.12);border:1px solid rgba(245,194,66,0.5);color:#f5c242;font-size:13px;line-height:1.55;font-weight:600;max-width:520px}
+.rueckdetail{margin-top:8px;padding-top:8px;border-top:1px solid rgba(245,194,66,0.3);font-weight:700}
+.rueckliste{margin:6px 0 0;padding-left:18px}
+.rueckliste li{margin:2px 0}
+.sdot{width:8px;height:8px;border-radius:50%;background:#00ADEF;animation:sdot 1.4s ease-in-out infinite}
+@keyframes sdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.2;transform:scale(0.4)}}
+.prog{padding:14px 18px 16px;border-top:1px solid rgba(0,173,239,0.1)}
+.prog-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.prog-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.28)}
+.prog-num{font-size:34px;font-weight:900;color:#fff;letter-spacing:-1px}
+.pbar{height:5px;background:rgba(255,255,255,0.06);border-radius:100px;overflow:visible;position:relative}
+.pfill{height:100%;width:0%;border-radius:100px;background:linear-gradient(90deg,#00ADEF,#00ADEF);position:relative;transition:width .6s ease}
+.ptip{position:absolute;right:-6px;top:-5px;width:15px;height:15px;border-radius:50%;background:#00ADEF;box-shadow:0 0 12px rgba(0,173,239,0.7)}
+.igrid{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid rgba(0,173,239,0.1)}
+.ic{padding:13px 18px;border-right:1px solid rgba(0,173,239,0.08)}
+.ic.ac{border-right:none;grid-column:1/-1;background:rgba(0,173,239,0.06)}
+.ic-l{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.26);margin-bottom:4px}
+.ic-v{font-size:16px;font-weight:700;color:#fff}
+.ic.ac .ic-v{color:#00ADEF}
+.steps{padding:14px 18px 16px}
+.shd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.st-t{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.26)}
+.st-c{font-size:12px;color:rgba(0,173,239,0.55);font-weight:700}
+.step{display:flex;align-items:center;gap:13px;padding:12px 13px;border-radius:10px;margin-bottom:7px;border:1px solid transparent}
+.step.done{background:rgba(0,173,239,0.04);border-color:rgba(0,173,239,0.1)}
+.step.active{background:rgba(0,173,239,0.09);border-color:rgba(0,173,239,0.28);position:relative;overflow:hidden}
+.step.active::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(0,173,239,0.08),transparent);animation:scan 2.4s ease-in-out infinite}
+@keyframes scan{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
+.step.pending{opacity:0.52}
+.dot{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.dot.done{background:linear-gradient(135deg,#00ADEF,#00ADEF)}
+.dot.active{background:linear-gradient(135deg,#00ADEF,#00ADEF);animation:dp 2s ease-in-out infinite}
+@keyframes dp{0%,100%{box-shadow:0 0 0 0 rgba(0,173,239,0.3)}60%{box-shadow:0 0 0 8px rgba(0,173,239,0.04)}}
+.dot.pending{border:1.5px solid rgba(0,173,239,0.3);background:rgba(0,173,239,0.05)}
+.di{width:9px;height:9px;border-radius:50%;background:#fff;animation:di 1.5s ease-in-out infinite}
+@keyframes di{0%,100%{transform:scale(1)}50%{transform:scale(0.35);opacity:0.5}}
+.sn{font-size:15px;font-weight:700}
+.step.done .sn{color:rgba(255,255,255,0.42)}
+.step.active .sn{color:#00ADEF}
+.step.pending .sn{color:rgba(255,255,255,0.65)}
+.stime{font-size:11px;color:rgba(255,255,255,0.2);margin-top:1px}
+.stime:empty{display:none}
+.step.active .stime{color:rgba(0,173,239,0.42)}
+.ftr{padding:14px 18px;text-align:center}
+.ftr p{font-size:10px;color:rgba(255,255,255,0.55);line-height:1.55}
+.ftr a{color:#00ADEF;text-decoration:none}
+.load{padding:60px 24px;text-align:center;color:#6c8298;font-size:14px}
+.load .sp{width:26px;height:26px;margin:0 auto 14px;border:3px solid rgba(0,173,239,0.2);border-top-color:#00ADEF;border-radius:50%;animation:sp 0.8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@keyframes pillpulse{0%,100%{box-shadow:0 0 0 0 rgba(0,173,239,0)}50%{box-shadow:0 0 26px 2px rgba(0,173,239,0.28)}}
+@keyframes pillpulseG{0%,100%{box-shadow:0 0 0 0 rgba(61,220,110,0)}50%{box-shadow:0 0 26px 2px rgba(61,220,110,0.32)}}
+@keyframes barglow{0%,100%{box-shadow:0 0 8px rgba(0,173,239,0.25)}50%{box-shadow:0 0 18px rgba(0,173,239,0.6)}}
+@keyframes tippulse{0%,100%{box-shadow:0 0 10px rgba(0,173,239,0.55);transform:scale(1)}50%{box-shadow:0 0 20px 4px rgba(0,173,239,0.9);transform:scale(1.18)}}
+@media (min-width:720px) and (hover:hover) and (pointer:fine){
+  body{padding:0;min-height:100vh;display:flex;align-items:center;justify-content:center}
+  .phone{max-width:none;width:100%;min-height:100vh;border-radius:0;margin:0}
+  .content{width:100%;max-width:1760px;min-height:100vh;margin:0 auto;display:grid;grid-template-columns:1fr 1.08fr;grid-template-rows:1fr auto auto 1fr auto;column-gap:30px;grid-template-areas:"sp1 sp1" "nav nav" "left steps" "sp2 sp2" "ftr ftr";align-items:stretch}
+  .nav{grid-area:nav;height:58px;padding:0 46px}
+  .nav svg{height:36px;transform:translateY(-6px)}
+  .leftcol{grid-area:left;display:flex;flex-direction:column;justify-content:center}
+  .steps{grid-area:steps;border-left:1px solid rgba(0,173,239,0.1);display:flex;flex-direction:column;justify-content:center}
+  .ftr{grid-area:ftr}
+  .hero{padding:26px 46px 18px}
+  .hero-nr{font-size:60px}
+  .hero-firma{font-size:18px}
+  .prog{padding:12px 46px 16px}
+  .prog-num{font-size:38px}
+  .igrid{grid-template-columns:1fr 1fr 1fr;align-items:start;padding:0 22px}
+  .ic{padding:12px 24px}
+  .ic.ac{grid-column:auto;border-right:none;background:rgba(0,173,239,0.06)}
+  .ic.ac .ic-v{font-weight:700}
+  .ic-l{font-size:12px;letter-spacing:2.5px;min-height:2.6em}
+  .ic-v{font-size:18px;font-weight:500}
+  .steps{padding:16px 46px}
+  .step{padding:9px 15px;margin-bottom:5px}
+  .dot{width:24px;height:24px}
+  .step.pending{opacity:0.66}
+  .dot.pending{border:2px solid rgba(0,173,239,0.6);background:rgba(0,173,239,0.1)}
+  .steps-list.cols2{column-count:2;column-gap:18px}
+  .steps-list.cols2 .step{break-inside:avoid;-webkit-column-break-inside:avoid}
+  .ftr{padding:18px;margin-top:0;border-top:none}
+  .ftr p{font-size:13px}
+  .hero-lbl{font-size:12px;letter-spacing:4px}
+  .nav-tag{font-size:11px}
+  .prog-lbl{font-size:12px;letter-spacing:3px}
+  .st-t{font-size:12px;letter-spacing:3px}
+  .st-c{font-size:14px}
+  .sn{font-size:17px}
+  .stime{font-size:13px;min-height:17px}
+  .stime:empty{display:block}
+  .pill{font-size:15px;padding:10px 20px;animation:pillpulse 2.6s ease-in-out infinite}
+  .pill.bereit{animation:pillpulseG 2.6s ease-in-out infinite}
+  .pfill{animation:barglow 2.4s ease-in-out infinite}
+  .ptip{animation:tippulse 1.8s ease-in-out infinite}
+}
 </style>
 </head>
 <body>
-<div id="hint">Bitte den persönlichen Tracking-Link mit Auftragsnummer öffnen.</div>
+<div class="phone">
+  <canvas class="bg" id="rcanvas"></canvas>
+  <div class="content">
+    <div class="nav">
+      <svg height="20" viewBox="0 0 2836 565" xmlns="http://www.w3.org/2000/svg" aria-label="TEXTRA"><path fill-rule="nonzero" fill="rgb(0%, 67.83905%, 93.728638%)" fill-opacity="1" d="M 176.515625 564.929688 L 176.515625 60.21875 L 0.484375 60.21875 L 0.492188 0.863281 L 2835.140625 2.300781 L 2816.429688 67.855469 L 301.359375 63.964844 L 301.359375 564.929688 Z M 516.546875 199.757812 C 516.546875 166.640625 521.921875 144.964844 532.5 134.90625 C 543.074219 124.675781 565.617188 119.648438 599.601562 119.648438 L 812.183594 119.648438 L 812.183594 158.144531 L 660.117188 158.144531 C 642.257812 158.144531 630.292969 160.746094 624.222656 165.773438 C 618.328125 170.800781 615.382812 180.164062 615.382812 193.6875 L 615.382812 305.875 L 776.640625 305.875 L 776.640625 349.574219 L 615.382812 349.574219 L 615.382812 491.410156 C 615.382812 504.933594 618.5 514.125 624.570312 518.980469 C 630.640625 524.007812 644.859375 526.4375 667.226562 526.4375 L 817.214844 526.4375 L 817.214844 564.929688 L 583.996094 564.929688 C 559.027344 564.929688 541.515625 559.730469 531.453125 549.152344 C 521.574219 538.746094 516.546875 517.246094 516.546875 484.820312 Z M 990.785156 564.929688 L 937.378906 564.929688 L 1095.859375 356.683594 L 933.390625 119.648438 L 1049.21875 119.648438 L 1155.679688 278.132812 L 1276.539062 119.648438 L 1326.308594 119.648438 L 1181.171875 313.160156 L 1352.660156 564.929688 L 1237.011719 564.929688 L 1119.621094 393.269531 Z M 1551.71875 564.929688 L 1551.71875 158.144531 L 1457.050781 158.144531 L 1457.050781 119.648438 L 1745.230469 119.648438 L 1745.230469 158.144531 L 1650.558594 158.144531 L 1650.558594 564.929688 Z M 2021.460938 564.929688 L 1922.609375 564.929688 L 1922.609375 119.648438 L 2101.21875 119.648438 C 2156.878906 119.648438 2199 130.050781 2227.960938 151.035156 C 2256.75 172.015625 2271.148438 202.53125 2271.148438 242.414062 C 2271.148438 271.546875 2262.46875 295.472656 2245.128906 314.023438 C 2227.789062 332.578125 2203.871094 343.851562 2173.351562 347.492188 L 2288.820312 564.929688 L 2170.21875 564.929688 L 2064.101562 342.464844 C 2100 341.769531 2126.351562 334.3125 2143 320.09375 C 2159.808594 305.875 2168.148438 283.507812 2168.148438 252.988281 C 2168.148438 219.875 2159.988281 195.421875 2143.519531 179.644531 C 2127.050781 163.863281 2101.738281 156.0625 2067.230469 156.0625 L 2021.460938 156.0625 Z M 2497.261719 427.601562 L 2457.71875 564.929688 L 2414.011719 564.929688 L 2523.261719 174.789062 C 2529.328125 152.421875 2539.210938 135.425781 2552.738281 123.636719 C 2566.269531 112.019531 2582.921875 106.125 2602.5 106.125 C 2623.128906 106.125 2641.160156 112.714844 2656.261719 125.71875 C 2671.511719 138.722656 2682.78125 157.101562 2689.898438 180.859375 L 2804.171875 564.929688 L 2703.058594 564.929688 L 2662.5 427.601562 Z M 2507.480469 389.109375 L 2652.261719 389.109375 L 2599.390625 200.105469 C 2596.078125 189.703125 2592.789062 182.765625 2589.839844 179.644531 C 2586.71875 176.351562 2582.921875 174.789062 2578.039062 174.789062 C 2574.761719 174.789062 2571.820312 176.523438 2569.210938 180.164062 C 2566.601562 183.632812 2563.828125 190.570312 2560.878906 200.625 L 2507.480469 389.109375 "/></svg>
+      <span class="nav-tag">Tracking</span>
+    </div>
+
+    <div id="loadwrap" class="load"><div class="sp"></div>Tracking wird geladen ...</div>
+
+    <div id="main" style="display:none">
+    <div class="leftcol">
+    <div class="hero">
+      <div class="hero-lbl">Auftragsnummer</div>
+      <div class="hero-nr"></div>
+      <div class="hero-firma"></div>
+      <div class="pill"><div class="sdot"></div></div>
+      <div id="dpdwrap"></div>
+      <div id="rueckwrap"></div>
+    </div>
+
+    <div class="prog">
+      <div class="prog-row">
+        <span class="prog-lbl">Gesamtfortschritt</span>
+        <span class="prog-num">0%</span>
+      </div>
+      <div class="pbar"><div class="pfill"><div class="ptip"></div></div></div>
+    </div>
+
+    <div class="igrid">
+      <div class="ic"><div class="ic-l">Veredelung</div><div class="ic-v" id="ic-vered"></div></div>
+      <div class="ic"><div class="ic-l">Lieferart</div><div class="ic-v" id="ic-lief"></div></div>
+      <div class="ic ac"><div class="ic-l" id="ic-term-l">Geplanter Liefertermin</div><div class="ic-v" id="ic-term-v"></div></div>
+    </div>
+    </div>
+
+    <div class="steps"><div class="shd"><span class="st-t">Produktionsschritte</span><span class="st-c"></span></div><div class="steps-list"></div></div>
+    </div>
+
+    <div class="ftr">
+      <p><a href="https://www.textra.net">info@<strong>TEXTRA</strong>.net</a> · +49 (0) 2841 600 07 98<br>Am Schürmannshütt 30F · 47441 Moers</p>
+    </div>
+  </div>
+</div>
+
 <script>
+// Racing-Hintergrund (identisch zur bisherigen Seite)
 (function(){
-  // Adresse der bereitgestellten TEXTRA-Web-App (CONFIG.WEB_APP_URL).
-  var WEBAPP = "https://script.google.com/macros/s/AKfycbxgmvSEWnsqmkBUnc-I_NLd_0akmmkAsDTbrliJRDNrjRJPT1vAdtr8j9UCLC255Y8d/exec";
-  var qs = window.location.search || "";
-  var hatParams = /[?&]nr=/.test(qs) && /[?&]token=/.test(qs);
-  if (hatParams) {
-    var hint = document.getElementById("hint");
-    if (hint) hint.parentNode.removeChild(hint);
-    var f = document.createElement("iframe");
-    f.src = WEBAPP + qs;             // nr und token werden 1:1 weitergereicht
-    f.setAttribute("title", "TEXTRA Tracking");
-    document.body.appendChild(f);
-    // Die Seite im Rahmen meldet ihre echte Hoehe. Rahmen waechst mit,
-    // dadurch scrollt die Seite am Handy normal (kein abgeschnittener Bereich).
-    window.addEventListener("message", function(ev){
-      var d = ev.data;
-      if (d && typeof d.textraHeight === "number" && d.textraHeight > 200) {
-        f.style.height = d.textraHeight + "px";
-      }
+  var c=document.getElementById('rcanvas'); if(!c)return;
+  var ctx=c.getContext('2d'); var phone=c.parentElement;
+  function resize(){ c.width=phone.offsetWidth; c.height=phone.offsetHeight; }
+  resize(); window.addEventListener('resize',resize);
+  var stripes=[
+    {y:0.07,h:0.09,speed:0.00008,offset:0,alpha:0.06},
+    {y:0.09,h:0.04,speed:0.00013,offset:0.3,alpha:0.1},
+    {y:0.105,h:0.015,speed:0.00019,offset:0.6,alpha:0.18},
+    {y:0.115,h:0.006,speed:0.00025,offset:0.8,alpha:0.22},
+    {y:0.72,h:0.08,speed:-0.00006,offset:0.2,alpha:0.05},
+    {y:0.74,h:0.032,speed:-0.00011,offset:0.5,alpha:0.09},
+    {y:0.755,h:0.012,speed:-0.00017,offset:0.7,alpha:0.16},
+    {y:0.765,h:0.005,speed:-0.00022,offset:0.9,alpha:0.2}
+  ];
+  var particles=[];
+  for(var i=0;i<12;i++){ particles.push({x:Math.random(),y:0.07+Math.random()*0.07,w:0.08+Math.random()*0.15,speed:0.0002+Math.random()*0.0003,alpha:0.3+Math.random()*0.3,layer:Math.random()<0.5?0:1}); }
+  var t=0;
+  function draw(ts){
+    t=(ts||0)*0.4; var W=c.width,H=c.height; ctx.clearRect(0,0,W,H);
+    var skew=Math.tan(22*Math.PI/180);
+    var dTop=(W>720)?-0.03:0, dBot=(W>720)?0.05:0;
+    stripes.forEach(function(s){
+      var off=(s.offset+t*s.speed)%1; var sy=(s.y<0.5)?(s.y+dTop):(s.y+dBot);
+      var yc=sy*H, hh=s.h*H;
+      ctx.save(); ctx.transform(1,0,-skew,1,0,0); ctx.fillStyle='rgba(0,173,239,'+s.alpha+')';
+      ctx.fillRect((off-0.5)*W*2.5,yc-hh/2,W*2.5,hh); ctx.restore();
     });
+    particles.forEach(function(p){
+      var off=(p.x+t*p.speed)%1.5-0.2;
+      var yy=p.layer===0?((0.07+dTop)+p.y*0.07)*H:((0.72+dBot)+p.y*0.06)*H;
+      ctx.save(); ctx.transform(1,0,-skew,1,0,0);
+      var grd=ctx.createLinearGradient(off*W*1.5,0,(off+p.w)*W*1.5,0);
+      grd.addColorStop(0,'rgba(0,173,239,0)'); grd.addColorStop(0.5,'rgba(0,173,239,'+p.alpha+')'); grd.addColorStop(1,'rgba(0,173,239,0)');
+      ctx.fillStyle=grd; ctx.fillRect(off*W*1.5,yy-1.5,p.w*W*1.5,3); ctx.restore();
+    });
+    requestAnimationFrame(draw);
   }
+  requestAnimationFrame(draw);
+})();
+</script>
+
+<script>
+// Daten laden per JSONP direkt vom Apps Script (kein iFrame, kein CORS).
+(function(){
+  var EXEC="https://script.google.com/macros/s/AKfycbxgmvSEWnsqmkBUnc-I_NLd_0akmmkAsDTbrliJRDNrjRJPT1vAdtr8j9UCLC255Y8d/exec";
+  var fertig=false, ersteAntwort=false;
+
+  function q(s){return document.querySelector(s);}
+  function esc(x){var d=document.createElement('div');d.textContent=(x==null?'':String(x));return d.innerHTML;}
+  function setText(sel,v){var el=q(sel);if(el)el.textContent=(v==null?'':String(v));}
+  function showLoad(msg){var l=q('#loadwrap');if(l){l.style.display='block';l.innerHTML=(msg||'Tracking wird geladen ...');}q('#main').style.display='none';}
+  function showErr(msg){var l=q('#loadwrap');if(l){l.style.display='block';l.textContent=msg;}q('#main').style.display='none';}
+
+  function param(){
+    var p=new URLSearchParams(location.search||'');
+    var t=p.get('t')||p.get('token')||'';
+    if(!t && location.hash) t=location.hash.replace(/^#/,'');
+    var nr=p.get('nr')||'';
+    if(!t) return '';
+    return 't='+encodeURIComponent(t)+(nr?('&nr='+encodeURIComponent(nr)):'');
+  }
+
+  window.__trackCb=function(r){
+    if(!r){ showErr('Verbindungsfehler, bitte neu laden.'); return; }
+    if(!r.ok){ showErr(r.notFound ? 'Auftrag nicht gefunden. Bitte den persoenlichen Link aus Deiner Bestaetigung oeffnen.' : 'Der Tracking-Dienst ist gerade nicht erreichbar, bitte spaeter erneut versuchen.'); return; }
+    q('#loadwrap').style.display='none';
+    q('#main').style.display='';
+    ersteAntwort=true;
+    document.title='TEXTRA '+r.nr;
+    setText('.hero-nr', r.nr);
+    setText('.hero-firma', r.firma);
+    var pill=q('.pill'); pill.className='pill'+(String(r.statusLabel||'').indexOf('Bereit zur Abholung')>=0?' bereit':''); pill.innerHTML='<div class="sdot"></div>'+esc(r.statusLabel);
+    var dw=q('#dpdwrap');
+    if(r.dpdLink && r.versandNr){
+      dw.innerHTML='<a href="'+esc(r.dpdLink)+'" target="_blank" rel="noopener" style="display:block;margin-top:14px;text-decoration:none;background:rgba(0,173,239,0.09);border:1px solid rgba(0,173,239,0.4);border-radius:12px;padding:12px 15px">'
+        +'<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#6c8298">DPD Sendungsverfolgung</div>'
+        +'<div style="font-size:19px;font-weight:800;color:#00ADEF;margin-top:3px;word-break:break-all">'+esc(r.versandNr)+'</div>'
+        +'<div style="font-size:11px;color:#6c8298;margin-top:3px">Antippen zum Verfolgen</div></a>';
+    } else { dw.innerHTML=''; }
+    q('#rueckwrap').innerHTML=r.rueckHinweis||'';
+    setText('.prog-num', r.prozent+'%');
+    q('.pfill').style.width=r.prozent+'%';
+    setText('#ic-vered', r.profil);
+    setText('#ic-lief', r.lieferart);
+    setText('#ic-term-l', (String(r.lieferart||'').indexOf('bholung')>=0?'Geplante Fertigstellung':'Geplanter Liefertermin'));
+    q('#ic-term-v').innerHTML=(r.terminAnzeige||'Auf Anfrage');
+    setText('.st-c', r.schrittInfo);
+    var sl=q('.steps-list'); sl.innerHTML=r.timelineHTML||'';
+    var total=parseInt(String(r.schrittInfo||'').split('/')[1],10)||0;
+    sl.className='steps-list'+(total>=8?' cols2':'');
+    fertig=!!r.istFertig;
+  };
+
+  var PARAM=param();
+  if(!PARAM){ showErr('Bitte den persoenlichen Tracking-Link mit Auftragsnummer oeffnen.'); return; }
+
+  function load(){
+    var s=document.createElement('script');
+    s.src=EXEC+'?action=trackjson&callback=__trackCb&'+PARAM+'&_='+Date.now();
+    s.onerror=function(){ if(!ersteAntwort) showErr('Verbindung fehlgeschlagen, bitte neu laden.'); };
+    document.body.appendChild(s);
+    setTimeout(function(){ if(s.parentNode) s.parentNode.removeChild(s); }, 20000);
+  }
+  load();
+  setInterval(function(){ if(!fertig && !document.hidden) load(); }, 30000);
 })();
 </script>
 </body>
